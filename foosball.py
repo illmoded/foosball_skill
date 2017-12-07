@@ -3,17 +3,27 @@ from exceptions import *
 
 
 class Player(trueskill.Rating):
+
+    @property
+    def n_games(self):
+        return self.n_games
+
+    @property
+    def rank(self):
+        return self.mu
+
     def __init__(self, name=None, n_games=0):
         super().__init__()
         self.name = name
-        self.n_games = n_games
-        self.rank = self.mu
+        self._n_games = n_games
+        self._rank = self.rank
 
     def __str__(self):
         return self.name
 
     def print_info(self):
-        return "{}'s rating is {}".format(self.name, self.mu)
+        print("{}'s rating is {:04.2f}".format(self.name, self._rank))
+        return "{}'s rating is {:04.2f}".format(self.name, self._rank)
 
 
 class Team:
@@ -25,11 +35,10 @@ class Team:
             raise SamePlayerException('Players have to be different!')
 
     def __str__(self):
-        return 'Team is composed of {} and {}'.format(self.player1, self.player2)
+        return '"{} and {}"'.format(self.player1, self.player2)
 
 
 class Match:
-
     def __init__(self, team1, team2, winner=None):
         self.team1 = team1
         self.team2 = team2
@@ -39,22 +48,29 @@ class Match:
 
         self.winner = winner
         if self.winner is not None:
-            try:
-                self.make_win(self.winner)
-            except WinnerException:
-                print('Pick correct winner')
-            
+            self.make_win(self.winner)
+
+    def rate(self, team1, team2, ranks):
+        t1 = [team1.player1, team1.player2]
+        t2 = [team2.player1, team2.player2]
+
+        (t1p1, t1p2), (t2p1, t2p2) = trueskill.rate([t1, t2], ranks=ranks)
+        team1.player1._rank = t1p1.mu
+        # todo: update others
+        # todo: fix saving, solve global variables
 
     def make_win(self, winner):
-        if winner != self.team1 or winner != self.team2:
-            raise WinnerException('Winner has to be one of ')
+        if winner != self.team1 and winner != self.team2:
+            raise WinnerException('Winner has to be one')
         else:
             if winner == self.team1:
                 ranks = [0, 1]
             else:
                 ranks = [1, 0]
+            self.rate(self.team1, self.team2, ranks)
 
-            (self.team1.player1, self.team1.player2) = trueskill.rate([self.team1, self.team2], ranks=ranks)
+    def __str__(self):
+        return "The winner of {} vs {} is {}".format(self.team1, self.team2, self.winner)
 
 
 if __name__ == '__main__':
@@ -63,11 +79,19 @@ if __name__ == '__main__':
     c = Player('C')
     d = Player('D')
 
-    players = [a, b, c, d]
-
-    for player in players:
-        print(player)
-        print(player.rank)
-
     team1 = Team(a, b)
-    print(team1.player1)
+    team2 = Team(c, d)
+
+    match = Match(team1, team2, winner=team1)
+    print(match)
+    a.print_info()
+    b.print_info()
+    c.print_info()
+    d.print_info()
+
+    match = Match(team1, team2, winner=team2)
+    print(match)
+    a.print_info()
+    b.print_info()
+    c.print_info()
+    d.print_info()
