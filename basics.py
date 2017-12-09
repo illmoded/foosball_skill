@@ -14,8 +14,11 @@ def main():
         t2 = [c,d]
 
         (a,b), (c, d) = rate([t1, t2], ranks=[0, 1])
-        print(a,b,c,d)
-        print(quality([t1,t2]))
+        print(a)
+        (a, b), (c, d) = rate([t1, t2], ranks=[1, 0])
+        print(a)
+        # print(a,b,c,d)
+        # print(quality([t1,t2]))
         # print(c)
 
         # print(quality([[alice],[bob]]))

@@ -1,97 +1,91 @@
 import trueskill
 from exceptions import *
 
+env = trueskill.TrueSkill()
 
-class Player(trueskill.Rating):
 
-    @property
-    def n_games(self):
-        return self.n_games
+class Player():
 
     @property
     def rank(self):
-        return self.mu
+        return self.rating.mu
 
-    def __init__(self, name=None, n_games=0):
-        super().__init__()
+    def __init__(self, name):
+        # todo: read from db -> add params to create_rating()
+        self.rating = env.create_rating()
         self.name = name
-        self._n_games = n_games
-        self._rank = self.rank
 
     def __str__(self):
-        return self.name
-
-    def print_info(self):
-        print("{}'s rating is {:04.2f}".format(self.name, self._rank))
-        return "{}'s rating is {:04.2f}".format(self.name, self._rank)
+        return 'PLAYER {} RATING {}'.format(self.name, self.rank)
 
 
 class Team:
-    def __init__(self, player1, player2):
+    def __init__(self, player1, player2, name = None):
         self.player1 = player1
         self.player2 = player2
+        self.name = name
+        self.make_dict()
 
         if player1 is player2:
             raise SamePlayerException('Players have to be different!')
 
     def __str__(self):
-        return '"{} and {}"'.format(self.player1, self.player2)
+        return '"{}: {} and {}"'.format(self.name ,self.player1.rating.mu, self.player2.rating.mu)
+
+    def make_dict(self):
+        self.data = {self.player1: self.player1.rating, self.player2: self.player2.rating}
 
 
-class Match:
-    def __init__(self, team1, team2, winner=None):
+class Game():
+
+    def __init__(self, team1, team2):
         self.team1 = team1
         self.team2 = team2
+        self.team1_data = self.team1.data
+        self.team2_data = self.team2.data
 
-        if team1 is team2:
-            raise SameTeamException('Teams have to be different')
-
-        self.winner = winner
-        if self.winner is not None:
-            self.make_win(self.winner)
-
-    def rate(self, team1, team2, ranks):
-        t1 = [team1.player1, team1.player2]
-        t2 = [team2.player1, team2.player2]
-
-        (t1p1, t1p2), (t2p1, t2p2) = trueskill.rate([t1, t2], ranks=ranks)
-        team1.player1._rank = t1p1.mu
-        # todo: update others
-        # todo: fix saving, solve global variables
-
-    def make_win(self, winner):
-        if winner != self.team1 and winner != self.team2:
-            raise WinnerException('Winner has to be one')
+    def rate_teams(self, winner):
+        self.winner = winner.data
+        if self.winner is self.team1_data:
+            ranks = [0, 1]
+        elif self.winner is self.team2_data:
+            ranks = [1, 0]
         else:
-            if winner == self.team1:
-                ranks = [0, 1]
-            else:
-                ranks = [1, 0]
-            self.rate(self.team1, self.team2, ranks)
+            print('wtf')
+            return 0
 
-    def __str__(self):
-        return "The winner of {} vs {} is {}".format(self.team1, self.team2, self.winner)
+        rating_groups = self.team1_data, self.team2_data
+        # print(rating_groups)
+        self.rated_rating_groups = env.rate(rating_groups, ranks=ranks)
+
+        for team in rating_groups:
+            idx = rating_groups.index(team)
+            for player in team:
+                player.rating = self.rated_rating_groups[idx][player]
+        self.update_teams()
+
+    def update_teams(self):
+        self.team1.make_dict()
+        self.team2.make_dict()
+        self.__init__(self.team1, self.team2) # todo: FIXXXXXXXXX
+
+    def print_ratings(self):
+        print(team1.player1)
+        print(team1.player2)
+        print(team2.player1)
+        print(team2.player2)
 
 
-if __name__ == '__main__':
-    a = Player('A')
-    b = Player('B')
-    c = Player('C')
-    d = Player('D')
+p1 = Player('1')
+p2 = Player('2')
+p3 = Player('3')
+p4 = Player('4')
 
-    team1 = Team(a, b)
-    team2 = Team(c, d)
+team1 = Team(p1, p2, name='t1')
+team2 = Team(p3, p4, name= 't2')
 
-    match = Match(team1, team2, winner=team1)
-    print(match)
-    a.print_info()
-    b.print_info()
-    c.print_info()
-    d.print_info()
+game = Game(team1, team2)
 
-    match = Match(team1, team2, winner=team2)
-    print(match)
-    a.print_info()
-    b.print_info()
-    c.print_info()
-    d.print_info()
+for i in range(7):
+    game.rate_teams(winner=team2)
+    game.print_ratings()
