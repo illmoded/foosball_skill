@@ -208,8 +208,10 @@ class Foosball:
         print(sorted(self.players.values(), reverse=True))
 
     def text_interface(self):
+
         print('Adding players!')
         inp = 'FOOSBALL INPUT'
+
         while True:
             print('Players:')
             self.print_players()
@@ -224,7 +226,7 @@ class Foosball:
         while True:
             print('Teams:')
             self.print_teams()
-            inp = input('X to skip adding and ove to PLAY\n')
+            inp = input('X to skip adding and move to PLAY\n')
             if inp == 'X':
                 break
             team_name = input('Type new team name.\n')
@@ -235,8 +237,9 @@ class Foosball:
 
         inp = 'FOOSBALL INPUT'
         print('Finally playing!')
+
         while True:
-            input('Press X to end, anything else to move to the match!\n')
+            inp = input('Press X to end, anything else to move to the match!\n')
             if inp == 'X':
                 break
             team1_name = input('Type in first team name\n')
