@@ -4,7 +4,6 @@ Script for rating foosball players
 
 import json
 import os
-import random
 from datetime import datetime
 
 import matplotlib.pyplot as plt
@@ -31,6 +30,9 @@ class Player:
     def __str__(self):
         return 'PLAYER {} RATING {}'.format(self.name, self.rank)
 
+    def __repr__(self):
+        return self.__str__()  # todo: fix this
+
     def read(self):
         try:
             data = []
@@ -39,10 +41,11 @@ class Player:
                     data.append(json.loads(line))
 
             last = data[-1]
+
             self.name = last['name']
             self.rating = env.create_rating(mu=last['mu'], sigma=last['sigma'])
         except FileNotFoundError:
-            print('Creating player')
+            print('Creating player: {}'.format(self.name))
             self.save()
 
     def save(self):
@@ -50,6 +53,15 @@ class Player:
             json.dump({'name': self.name, 'mu': self.rank, 'sigma': self.rating.sigma, 'time': str(datetime.now())},
                       f, ensure_ascii=False)
             f.write('\n')
+
+    def __eq__(self, other):
+        return self.rating.mu == other.rating.mu
+
+    def __gt__(self, other):
+        return self.rating.mu > other.rating.mu
+
+    def __lt__(self, other):
+        return self.rating.mu < other.rating.mu
 
 
 class Team:
@@ -88,7 +100,6 @@ class Game:
             return 0
 
         rating_groups = self.team1_data, self.team2_data
-        # print(rating_groups)
         self.rated_rating_groups = env.rate(rating_groups, ranks=ranks)
 
         for team in rating_groups:
@@ -102,7 +113,7 @@ class Game:
     def update_teams(self):
         self.team1.make_dict()
         self.team2.make_dict()
-        self.__init__(self.team1, self.team2)  # todo: style is so bad I cant handle
+        self.__init__(self.team1, self.team2)  # todo: :(
 
     def print_ratings(self):
         print(self.team1.player1)
@@ -124,65 +135,115 @@ def errorfill(x, y, yerr, color=None, alpha_fill=0.3, ax=None):  # todo: find st
         color = base_line.get_color()
     ax.fill_between(x, ymax, ymin, facecolor=color, alpha=alpha_fill)
 
-def check_player_files():
-    files = []
-    for file in os.listdir("./data"):
-        if file.endswith(".json"):
-            files.append(file.rstrip('.json'))
-    return files
+
+class Foosball:
+
+    def __init__(self):
+        self.files = []
+        self.players = {}
+        self.teams = {}
+        self.player_names = []
+        self.check_player_files()
+        self.add_players_from_files()
+
+    def check_player_files(self):
+        files = []
+        for file in os.listdir("./data"):
+            if file.endswith(".json"):
+                files.append(file.rstrip('.json'))
+        self.files = files
+
+    def add(self, name):
+        self.players[name] = Player(name)
+        self.players[name].read()
+        if name not in self.player_names:
+            self.player_names.append(name)
+
+    def add_players_from_files(self):
+
+        for player_name in self.files:
+            self.player_names.append(player_name)
+
+        if self.player_names is not None:
+            for player_name in self.player_names:
+                if player_name in self.files:
+                    self.add(player_name)
+
+    def add_player_from_input(self, player_name):
+        if player_name not in self.player_names:
+            self.add(player_name)
+        else:
+            print('Player name taken!')
+
+    def add_team(self, player1_name, player2_name, team_name):
+        player1 = self.players[player1_name]
+        player2 = self.players[player2_name]
+
+        team = Team(player1, player2, team_name)
+        self.teams[team_name] = team
+        # todo: now same player can be in different teams
+
+    def play(self, team1_name, team2_name):
+        team1 = self.teams[team1_name]
+        team2 = self.teams[team2_name]
+
+        self.game = Game(team1, team2)
+        winner_name = input("Type winning team name. \n")
+        winner = self.teams[winner_name]
+        self.game.rate_teams(winner=winner)
+
+    def print_players(self):
+        for player in self.player_names:
+            print(player)
+
+    def print_teams(self):
+        for team in self.teams:
+            print(team)
+
+    def print_ratings(self):
+        print(sorted(self.players.values()))
+
+
+def main():
+    f = Foosball()
+
+    print('Adding players!')
+    inp = 'FOOSBALL INPUT'
+    while True:
+        print('Players:')
+        f.print_players()
+        inp = input('Type new player name.\nType X to move to TEAMS\n')
+        if inp == 'X':
+            break
+        f.add_player_from_input(inp)
+
+    inp = 'FOOSBALL INPUT'
+    print('Adding teams!')
+
+    while True:
+        print('Teams:')
+        f.print_teams()
+        inp = input('X to skip adding and ove to PLAY')
+        if inp == 'X':
+            break
+        team_name = input('Type new team name.\n')
+        player1_name = input('Type name of 1st player.\n')
+        player2_name = input('Type name of 2nd player.\n')
+
+        f.add_team(player1_name,player2_name,team_name)
+
+    inp = 'FOOSBALL INPUT'
+    print('Finally playing!')
+    while True:
+        team1_name = input('TEAM 1 NAME\n')
+        team2_name = input('TEAM 2 NAME\n')
+        f.play(team1_name, team2_name)
+
+        if inp == 'X':
+            break
+
+    f.print_ratings()
 
 
 if __name__ == '__main__':
-
-    files =  check_player_files()
-    player_names = ['1','4']
-
-    players = {}
-    for player_name in player_names:
-        if player_name in files:
-            players[player_name] = Player(player_name)
-
-    for name in player_names:
-        print(players[name])
-
-    pass
-    #
-    # p1 = Player('1')
-    # p2 = Player('2')
-    # p3 = Player('3')
-    # p4 = Player('4')
-    #
-    # team1 = Team(p1, p2, name='t1')
-    # team2 = Team(p3, p4, name='t2')
-    #
-    # game = Game(team1, team2)
-    #
-    # x = []
-    # y = []
-    # yerr = []
-    #
-    # x2 = []
-    # y2 = []
-    # yerr2 = []
-    #
-    # for i in range(1000):
-    #     r = random.random() < 0.9
-    #     if r:
-    #         winner = team1
-    #     else:
-    #         winner = team2
-    #
-    #     game.rate_teams(winner=winner)
-    #
-    #     x.append(i)
-    #     y.append(p1.rating.mu)
-    #     yerr.append(p1.rating.sigma)
-    #
-    #     x2.append(i)
-    #     y2.append(p3.rating.mu)
-    #     yerr2.append(p3.rating.sigma)
-    #
-    # errorfill(x, y, yerr)
-    # errorfill(x2, y2, yerr2)
-    #
-    # plt.show()
+    main()
