@@ -238,11 +238,11 @@ def main():
         team1_name = input('TEAM 1 NAME\n')
         team2_name = input('TEAM 2 NAME\n')
         f.play(team1_name, team2_name)
+        f.print_ratings()
 
         if inp == 'X':
             break
 
-    f.print_ratings()
 
 
 if __name__ == '__main__':
