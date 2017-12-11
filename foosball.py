@@ -227,7 +227,7 @@ def main():
     while True:
         print('Teams:')
         f.print_teams()
-        inp = input('X to skip adding and ove to PLAY')
+        inp = input('X to skip adding and ove to PLAY\n')
         if inp == 'X':
             break
         team_name = input('Type new team name.\n')
@@ -243,7 +243,7 @@ def main():
         team2_name = input('TEAM 2 NAME\n')
         f.play(team1_name, team2_name)
         f.print_ratings()
-
+        input('Press X to end, anything else to move to the next match!')
         if inp == 'X':
             break
 
