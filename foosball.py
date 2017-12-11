@@ -207,45 +207,47 @@ class Foosball:
     def print_ratings(self):
         print(sorted(self.players.values(), reverse=True))
 
+    def text_interface(self):
+        print('Adding players!')
+        inp = 'FOOSBALL INPUT'
+        while True:
+            print('Players:')
+            self.print_players()
+            inp = input('Type new player name.\nType X to move to TEAMS\n')
+            if inp == 'X':
+                break
+            self.add_player_from_input(inp)
+
+        inp = 'FOOSBALL INPUT'
+        print('Adding teams!')
+
+        while True:
+            print('Teams:')
+            self.print_teams()
+            inp = input('X to skip adding and ove to PLAY\n')
+            if inp == 'X':
+                break
+            team_name = input('Type new team name.\n')
+            player1_name = input('Type name of 1st player.\n')
+            player2_name = input('Type name of 2nd player.\n')
+
+            self.add_team(player1_name, player2_name, team_name)
+
+        inp = 'FOOSBALL INPUT'
+        print('Finally playing!')
+        while True:
+            input('Press X to end, anything else to move to the match!\n')
+            if inp == 'X':
+                break
+            team1_name = input('Type in first team name\n')
+            team2_name = input('Type in second team name\n')
+            self.play(team1_name, team2_name)
+            self.print_ratings()
+
 
 def main():
     f = Foosball()
-
-    print('Adding players!')
-    inp = 'FOOSBALL INPUT'
-    while True:
-        print('Players:')
-        f.print_players()
-        inp = input('Type new player name.\nType X to move to TEAMS\n')
-        if inp == 'X':
-            break
-        f.add_player_from_input(inp)
-
-    inp = 'FOOSBALL INPUT'
-    print('Adding teams!')
-
-    while True:
-        print('Teams:')
-        f.print_teams()
-        inp = input('X to skip adding and ove to PLAY\n')
-        if inp == 'X':
-            break
-        team_name = input('Type new team name.\n')
-        player1_name = input('Type name of 1st player.\n')
-        player2_name = input('Type name of 2nd player.\n')
-
-        f.add_team(player1_name, player2_name, team_name)
-
-    inp = 'FOOSBALL INPUT'
-    print('Finally playing!')
-    while True:
-        team1_name = input('TEAM 1 NAME\n')
-        team2_name = input('TEAM 2 NAME\n')
-        f.play(team1_name, team2_name)
-        f.print_ratings()
-        input('Press X to end, anything else to move to the next match!')
-        if inp == 'X':
-            break
+    f.text_interface()
 
 
 if __name__ == '__main__':
