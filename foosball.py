@@ -63,6 +63,10 @@ class Player:
     def __lt__(self, other):
         return self.rating.mu < other.rating.mu
 
+    def __hash__(self):
+        print(self.name, self.rating.mu, self.rating.sigma)
+        return hash((self.name, self.rating.mu, self.rating.sigma))
+
 
 class Team:
     def __init__(self, player1, player2, name=None):
@@ -201,7 +205,7 @@ class Foosball:
             print(team)
 
     def print_ratings(self):
-        print(sorted(self.players.values()))
+        print(sorted(self.players.values(), reverse=True))
 
 
 def main():
@@ -230,7 +234,7 @@ def main():
         player1_name = input('Type name of 1st player.\n')
         player2_name = input('Type name of 2nd player.\n')
 
-        f.add_team(player1_name,player2_name,team_name)
+        f.add_team(player1_name, player2_name, team_name)
 
     inp = 'FOOSBALL INPUT'
     print('Finally playing!')
@@ -242,7 +246,6 @@ def main():
 
         if inp == 'X':
             break
-
 
 
 if __name__ == '__main__':
