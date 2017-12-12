@@ -79,7 +79,8 @@ class Team:
             raise SamePlayerException('Players have to be different!')
 
     def __str__(self):
-        return '"{}: {} and {}"'.format(self.name, self.player1.rating.mu, self.player2.rating.mu)
+        return '"Team {}: {}{} and {}"'.format(self.name, self.player1.name, self.player1.rating.mu, self.player2.name,
+                                               self.player2.rating.mu)
 
     def make_dict(self):
         self.data = {self.player1: self.player1.rating, self.player2: self.player2.rating}
@@ -154,7 +155,7 @@ class Foosball:
         files = []
         for file in os.listdir("./data"):
             if file.endswith(".json"):
-                files.append(file.rstrip('.json'))
+                files.append(file.replace('.json', ''))
         self.files = files
 
     def add(self, name):
@@ -221,17 +222,20 @@ class Foosball:
             self.add_player_from_input(inp)
 
         inp = 'FOOSBALL INPUT'
-        print('Adding teams!')
+        print('Adding teams!\n')
 
         while True:
             print('Teams:')
             self.print_teams()
-            inp = input('X to skip adding and move to PLAY\n')
+            inp = input('X to skip adding teams and move to PLAY\n')
             if inp == 'X':
                 break
             team_name = input('Type new team name.\n')
             player1_name = input('Type name of 1st player.\n')
             player2_name = input('Type name of 2nd player.\n')
+            inp = input('To cancel press x')
+            if inp == 'x':
+                continue
 
             self.add_team(player1_name, player2_name, team_name)
 
