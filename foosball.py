@@ -79,8 +79,8 @@ class Team:
             raise SamePlayerException('Players have to be different!')
 
     def __str__(self):
-        return '"Team {}: {}{} and {}"'.format(self.name, self.player1.name, self.player1.rating.mu, self.player2.name,
-                                               self.player2.rating.mu)
+        return '"Team {}: {} {} and {} {}"'.format(self.name, self.player1.name, self.player1.rating.mu,
+                                                   self.player2.name, self.player2.rating.mu)
 
     def make_dict(self):
         self.data = {self.player1: self.player1.rating, self.player2: self.player2.rating}
@@ -195,6 +195,7 @@ class Foosball:
         self.game = Game(team1, team2)
         winner_name = input("Type winning team name. \n")
         winner = self.teams[winner_name]
+
         self.game.rate_teams(winner=winner)
 
     def print_players(self):
@@ -203,10 +204,11 @@ class Foosball:
 
     def print_teams(self):
         for team in self.teams:
-            print(team)
+            print(self.teams[team])
 
     def print_ratings(self):
-        print(sorted(self.players.values(), reverse=True))
+        for name in sorted(self.players.values(), reverse=True):
+            print(name)
 
     def text_interface(self):
 
@@ -227,14 +229,14 @@ class Foosball:
         while True:
             print('Teams:')
             self.print_teams()
-            inp = input('X to skip adding teams and move to PLAY\n')
+            inp = input('X to skip adding teams and move to PLAY\nAnything else to add new team.')
             if inp == 'X':
                 break
             team_name = input('Type new team name.\n')
             player1_name = input('Type name of 1st player.\n')
             player2_name = input('Type name of 2nd player.\n')
-            inp = input('To cancel press x')
-            if inp == 'x':
+            if player1_name not in self.player_names or player2_name not in self.player_names:
+                print('One of players not found, try again!')
                 continue
 
             self.add_team(player1_name, player2_name, team_name)
@@ -246,9 +248,14 @@ class Foosball:
             inp = input('Press X to end, anything else to move to the match!\n')
             if inp == 'X':
                 break
+
             team1_name = input('Type in first team name\n')
+            print(self.teams[team1_name])
             team2_name = input('Type in second team name\n')
+            print(self.teams[team2_name])
+
             self.play(team1_name, team2_name)
+            print('Now printing ratings.\n')
             self.print_ratings()
 
 
